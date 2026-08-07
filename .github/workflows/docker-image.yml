@@ -1,12 +1,10 @@
-name: Docker Image CI
+name: Build ComfyUI Anima
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+
   workflow_dispatch:
 
 jobs:
@@ -14,28 +12,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request'
+      - name: Login Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and Push
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
+
           tags: |
-            12el3rlll/comfyui-anima:v6
+            12el3rlll/comfyui-anima:v7
             12el3rlll/comfyui-anima:latest
+
           cache-from: type=gha
           cache-to: type=gha,mode=max
