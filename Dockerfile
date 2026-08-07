@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1.7
+
+FROM ${BASE_IMAGE}
 ARG ANIMA_REVISION=main
 ENV ANIMA_REVISION=${ANIMA_REVISION}
 ARG BASE_IMAGE=runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
-FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
