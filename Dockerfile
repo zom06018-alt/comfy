@@ -1,16 +1,17 @@
 # syntax=docker/dockerfile:1.7
 
-FROM ${BASE_IMAGE}
-ARG ANIMA_REVISION=main
-ENV ANIMA_REVISION=${ANIMA_REVISION}
+# syntax=docker/dockerfile:1.7
+
 ARG BASE_IMAGE=runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
+FROM ${BASE_IMAGE}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG COMFYUI_REF=master
 ARG ANIMA_REVISION=main
 
-ENV DEBIAN_FRONTEND=noninteractive \
+ENV ANIMA_REVISION=${ANIMA_REVISION} \
+    DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     COMFYUI_PATH=/opt/ComfyUI \
