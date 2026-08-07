@@ -1,4 +1,6 @@
 # syntax=docker/dockerfile:1.7
+ARG ANIMA_REVISION=main
+ENV ANIMA_REVISION=${ANIMA_REVISION}
 ARG BASE_IMAGE=runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
 FROM ${BASE_IMAGE}
 
@@ -48,49 +50,86 @@ RUN mkdir -p \
       models/ultralytics \
       input output user/default/workflows
 
-# Models are embedded in the image. No /workspace volume is required.
-RUN aria2c --console-log-level=warn --summary-interval=10 \
-      --allow-overwrite=true --auto-file-renaming=false \
-      --max-connection-per-server=8 --split=8 --min-split-size=10M \
-      -d models/diffusion_models \
-      -o anima-base-v1.0.safetensors \
-      "https://huggingface.co/circlestone-labs/Anima/resolve/${ANIMA_REVISION}/split_files/diffusion_models/anima-base-v1.0.safetensors?download=true" \
-    && aria2c --console-log-level=warn --summary-interval=10 \
-      --allow-overwrite=true --auto-file-renaming=false \
-      --max-connection-per-server=8 --split=8 --min-split-size=10M \
-      -d models/text_encoders \
-      -o qwen_3_06b_base.safetensors \
-      "https://huggingface.co/circlestone-labs/Anima/resolve/${ANIMA_REVISION}/split_files/text_encoders/qwen_3_06b_base.safetensors?download=true" \
-    && aria2c --console-log-level=warn --summary-interval=10 \
-      --allow-overwrite=true --auto-file-renaming=false \
-      --max-connection-per-server=8 --split=8 --min-split-size=10M \
-      -d models/vae \
-      -o qwen_image_vae.safetensors \
-      "https://huggingface.co/circlestone-labs/Anima/resolve/${ANIMA_REVISION}/split_files/vae/qwen_image_vae.safetensors?download=true" \
-    && aria2c --console-log-level=warn --summary-interval=10 \
-      --allow-overwrite=true --auto-file-renaming=false \
-      --max-connection-per-server=8 --split=8 --min-split-size=10M \
-      -d models/vae \
-      -o Qwen2D_VAE.safetensors \
-      "https://huggingface.co/Anzhc/Qwen2D-VAE/resolve/main/Qwen2D_VAE.safetensors?download=true" \
-    && aria2c --console-log-level=warn --summary-interval=10 \
-      --allow-overwrite=true --auto-file-renaming=false \
-      --max-connection-per-server=8 --split=8 --min-split-size=10M \
-      -d models/loras \
-      -o anima-turbo-lora-v0.2.safetensors \
-      "https://huggingface.co/circlestone-labs/Anima-Official-LoRAs/resolve/main/anima-turbo-lora-v0.2.safetensors?download=true" \
-    && aria2c --console-log-level=warn --summary-interval=10 \
-      --allow-overwrite=true --auto-file-renaming=false \
-      --max-connection-per-server=8 --split=8 --min-split-size=10M \
-      -d models/controlnet \
-      -o anima-lllite-inpainting-v2.safetensors \
-      "https://huggingface.co/kohya-ss/Anima-LLLite/resolve/main/anima-lllite-inpainting-v2.safetensors?download=true" \
-    && test -s models/diffusion_models/anima-base-v1.0.safetensors \
-    && test -s models/text_encoders/qwen_3_06b_base.safetensors \
-    && test -s models/vae/qwen_image_vae.safetensors \
-    && test -s models/vae/Qwen2D_VAE.safetensors \
-    && test -s models/loras/anima-turbo-lora-v0.2.safetensors \
-    && test -s models/controlnet/anima-lllite-inpainting-v2.safetensors
+# Hugging Face Xet-compatible downloader
+RUN python -m pip install --no-cache-dir --upgrade \
+    "huggingface_hub[hf_xet]"
+
+ENV HF_HOME=/tmp/huggingface
+
+RUN python - <<'PY'
+from pathlib import Path
+from huggingface_hub import hf_hub_download
+import os
+import shutil
+
+anima_revision = os.environ.get("ANIMA_REVISION", "main")
+
+files = [
+    {
+        "repo_id": "circlestone-labs/Anima",
+        "filename": "split_files/diffusion_models/anima-base-v1.0.safetensors",
+        "revision": anima_revision,
+        "destination": "/opt/ComfyUI/models/diffusion_models/anima-base-v1.0.safetensors",
+    },
+    {
+        "repo_id": "circlestone-labs/Anima",
+        "filename": "split_files/text_encoders/qwen_3_06b_base.safetensors",
+        "revision": anima_revision,
+        "destination": "/opt/ComfyUI/models/text_encoders/qwen_3_06b_base.safetensors",
+    },
+    {
+        "repo_id": "circlestone-labs/Anima",
+        "filename": "split_files/vae/qwen_image_vae.safetensors",
+        "revision": anima_revision,
+        "destination": "/opt/ComfyUI/models/vae/qwen_image_vae.safetensors",
+    },
+    {
+        "repo_id": "Anzhc/Qwen2D-VAE",
+        "filename": "Qwen2D_VAE.safetensors",
+        "revision": "main",
+        "destination": "/opt/ComfyUI/models/vae/Qwen2D_VAE.safetensors",
+    },
+    {
+        "repo_id": "circlestone-labs/Anima-Official-LoRAs",
+        "filename": "anima-turbo-lora-v0.2.safetensors",
+        "revision": "main",
+        "destination": "/opt/ComfyUI/models/loras/anima-turbo-lora-v0.2.safetensors",
+    },
+    {
+        "repo_id": "kohya-ss/Anima-LLLite",
+        "filename": "anima-lllite-inpainting-v2.safetensors",
+        "revision": "main",
+        "destination": "/opt/ComfyUI/models/controlnet/anima-lllite-inpainting-v2.safetensors",
+    },
+]
+
+for item in files:
+    destination = Path(item["destination"])
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    print(
+        f"Downloading {item['repo_id']}/"
+        f"{item['filename']}@{item['revision']}"
+    )
+
+    cached_path = hf_hub_download(
+        repo_id=item["repo_id"],
+        filename=item["filename"],
+        revision=item["revision"],
+    )
+
+    shutil.copyfile(cached_path, destination)
+
+    size = destination.stat().st_size
+    if size <= 0:
+        raise RuntimeError(f"Downloaded file is empty: {destination}")
+
+    print(f"Saved {destination}: {size:,} bytes")
+
+print("All model downloads completed.")
+PY
+
+RUN rm -rf /tmp/huggingface
 
 # Remove caches and Git histories after installation to reduce image size.
 RUN find /opt/ComfyUI/custom_nodes -type d -name .git -prune -exec rm -rf '{}' + \
