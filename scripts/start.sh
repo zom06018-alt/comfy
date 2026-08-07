@@ -4,43 +4,81 @@ set -euo pipefail
 
 COMFYUI_PATH="${COMFYUI_PATH:-/opt/ComfyUI}"
 
-echo "========================================"
-echo " Starting RunPod ComfyUI + JupyterLab"
-echo "========================================"
+echo ""
+echo "=============================================="
+echo " RunPod ComfyUI + Anima"
+echo "=============================================="
+echo " ComfyUI    : 8188"
+echo " JupyterLab : 8888"
+echo " Root       : /opt"
+echo "=============================================="
+echo ""
 
-# ------------------------------------------------------------
+# ============================================================
 # tcmalloc
-# ------------------------------------------------------------
+# ============================================================
 
-TCMALLOC="$(find /usr/lib /usr/lib/x86_64-linux-gnu \
+TCMALLOC="$(find \
+    /usr/lib \
+    /usr/lib/x86_64-linux-gnu \
     -name 'libtcmalloc_minimal.so*' \
     2>/dev/null \
     | head -n 1 || true)"
 
 if [[ -n "${TCMALLOC}" ]]; then
-    echo "Using tcmalloc: ${TCMALLOC}"
+
+    echo "Using tcmalloc:"
+    echo "${TCMALLOC}"
+
     export LD_PRELOAD="${TCMALLOC}"
+
 else
-    echo "tcmalloc library not found; continuing without LD_PRELOAD."
+
+    echo "tcmalloc not found."
+    echo "Continuing without LD_PRELOAD."
+
 fi
 
-# ------------------------------------------------------------
+# ============================================================
+# CUDA information
+# ============================================================
+
+python - <<'PY'
+import torch
+
+print("")
+print("==============================================")
+print("PyTorch :", torch.__version__)
+print("CUDA    :", torch.version.cuda)
+
+if torch.cuda.is_available():
+    print("GPU     :", torch.cuda.get_device_name(0))
+else:
+    print("GPU     : CUDA NOT AVAILABLE")
+
+print("==============================================")
+print("")
+PY
+
+# ============================================================
 # SageAttention check
-# ------------------------------------------------------------
+# ============================================================
 
 python - <<'PY'
 try:
     from sageattention import sageattn
     print("SageAttention: OK")
 except Exception as exc:
-    print("WARNING: SageAttention unavailable:", repr(exc))
+    print("SageAttention ERROR:")
+    print(repr(exc))
 PY
 
-# ------------------------------------------------------------
+# ============================================================
 # JupyterLab
-# ------------------------------------------------------------
+# ============================================================
 
-echo "Starting JupyterLab on port 8888..."
+echo ""
+echo "Starting JupyterLab on :8888"
 
 jupyter lab \
     --ip=0.0.0.0 \
@@ -55,15 +93,38 @@ jupyter lab \
 
 JUPYTER_PID=$!
 
-echo "JupyterLab PID: ${JUPYTER_PID}"
+echo "JupyterLab PID:"
+echo "${JUPYTER_PID}"
 
-# ------------------------------------------------------------
+# ============================================================
+# Give Jupyter a moment to start
+# ============================================================
+
+sleep 2
+
+if kill -0 "${JUPYTER_PID}" 2>/dev/null; then
+
+    echo "JupyterLab: RUNNING"
+
+else
+
+    echo "WARNING: JupyterLab exited."
+
+    if [[ -f /tmp/jupyter.log ]]; then
+        cat /tmp/jupyter.log
+    fi
+
+fi
+
+# ============================================================
 # ComfyUI
-# ------------------------------------------------------------
+# ============================================================
 
 cd "${COMFYUI_PATH}"
 
-echo "Starting ComfyUI on port 8188..."
+echo ""
+echo "Starting ComfyUI on :8188"
+echo ""
 
 exec python main.py \
     --listen 0.0.0.0 \
