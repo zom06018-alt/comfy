@@ -239,7 +239,7 @@ PY
 # Startup
 # ------------------------------------------------------------
 
-COPY start.sh /usr/local/bin/start-comfy
+COPY /scripts/start.sh /usr/local/bin/start-comfy
 
 RUN chmod +x /usr/local/bin/start-comfy
 
