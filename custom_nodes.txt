@@ -1,0 +1,17 @@
+# One Git repository per line. Duplicate KJNodes entry was removed.
+https://github.com/Comfy-Org/ComfyUI-Manager.git
+https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git
+https://github.com/bedovyy/chibi-client.git
+https://github.com/cosmicbuffalo/comfyui-mobile-frontend.git
+https://github.com/rgthree/rgthree-comfy.git
+https://github.com/ruwwww/comfyui-spectrum-sdxl.git
+https://github.com/kijai/ComfyUI-KJNodes.git
+https://github.com/BobJohnson24/ComfyUI-INT8-Fast.git
+https://github.com/Anzhc/anzhc-qwen2d-comfyui.git
+https://github.com/arcacolab/honey_client.git
+https://github.com/kohya-ss/ComfyUI-Anima-LLLite.git
+https://github.com/sorryhyun/ComfyUI-Spectrum-KSampler.git
+https://github.com/n0va39/ComfyUI-EasyUseAnima.git
+https://github.com/ltdrdata/ComfyUI-Impact-Pack.git
+https://github.com/alexopus/ComfyUI-Image-Saver.git
+https://github.com/willmiao/ComfyUI-Lora-Manager.git
