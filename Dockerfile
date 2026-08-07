@@ -137,6 +137,10 @@ RUN rm -rf /tmp/huggingface
 RUN find /opt/ComfyUI/custom_nodes -type d -name .git -prune -exec rm -rf '{}' + \
     && rm -rf /root/.cache /opt/huggingface-cache /tmp/*
 
+    # SageAttention required by KJNodes / EasyUseAnima
+RUN python -m pip install --no-cache-dir sageattention \
+    && python -c "from sageattention import sageattn; print('SageAttention OK')"
+
 COPY scripts/start.sh /usr/local/bin/start-comfyui
 RUN chmod +x /usr/local/bin/start-comfyui
 
