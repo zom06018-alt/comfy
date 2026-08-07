@@ -36,5 +36,10 @@ jobs:
             12el3rlll/comfyui-anima:v7
             12el3rlll/comfyui-anima:latest
 
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        cache-from: |
+        type=registry,ref=12el3rlll/comfyui-anima:buildcache
+      type=gha
+
+    cache-to: |
+      type=registry,ref=12el3rlll/comfyui-anima:buildcache,mode=max
+      type=gha,mode=max
