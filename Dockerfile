@@ -73,61 +73,50 @@ RUN python -m pip install --no-cache-dir \
     jupyterlab \
     piexif \
     gdown
-
 # ============================================================
 # Custom Nodes
+# custom_nodes.txt에 GitHub 주소를 한 줄씩 작성
 # ============================================================
+
+COPY custom_nodes.txt /tmp/custom_nodes.txt
 
 WORKDIR /opt/ComfyUI/custom_nodes
 
 RUN set -eux; \
-    git clone --depth 1 \
-        https://github.com/Comfy-Org/ComfyUI-Manager.git; \
+    while IFS= read -r repo || [ -n "$repo" ]; do \
+        repo="$(echo "$repo" | xargs)"; \
+        \
+        [ -n "$repo" ] || continue; \
+        \
+        case "$repo" in \
+            \#*) continue ;; \
+        esac; \
+        \
+        echo "============================================"; \
+        echo "CLONING CUSTOM NODE:"; \
+        echo "$repo"; \
+        echo "============================================"; \
+        \
+        for attempt in 1 2 3; do \
+            if git clone --depth 1 "$repo"; then \
+                break; \
+            fi; \
+            \
+            if [ "$attempt" -eq 3 ]; then \
+                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
+                echo "CUSTOM NODE CLONE FAILED:"; \
+                echo "$repo"; \
+                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
+                exit 1; \
+            fi; \
+            \
+            echo "Clone failed. Retry ${attempt}/3..."; \
+            sleep 3; \
+        done; \
+    done < /tmp/custom_nodes.txt; \
     \
-    git clone --depth 1 \
-        https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/bedovyy/chibi-client.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/cosmicbuffalo/comfyui-mobile-frontend.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/rgthree/rgthree-comfy.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/ruwwww/comfyui-spectrum-sdxl.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/kijai/ComfyUI-KJNodes.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/BobJohnson24/ComfyUI-INT8-Fast.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/Anzhc/anzhc-qwen2d-comfyui.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/arcacolab/honey_client.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/kohya-ss/ComfyUI-Anima-LLLite.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/sorryhyun/ComfyUI-Spectrum-KSampler.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/n0va39/ComfyUI-EasyUseAnima.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/ltdrdata/ComfyUI-Impact-Pack.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/alexopus/ComfyUI-Image-Saver.git; \
-    \
-    git clone --depth 1 \
-        https://github.com/willmiao/ComfyUI-Lora-Manager.git
+    rm -f /tmp/custom_nodes.txt
+
 
 # ============================================================
 # Install Custom Node requirements
