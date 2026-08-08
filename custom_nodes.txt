@@ -15,3 +15,4 @@ https://github.com/n0va39/ComfyUI-EasyUseAnima.git
 https://github.com/ltdrdata/ComfyUI-Impact-Pack.git
 https://github.com/alexopus/ComfyUI-Image-Saver.git
 https://github.com/willmiao/ComfyUI-Lora-Manager.git
+https://github.com/yolain/ComfyUI-Easy-Use.git
