@@ -75,49 +75,70 @@ RUN python -m pip install --no-cache-dir \
     gdown
 # ============================================================
 # Custom Nodes
-# custom_nodes.txt에 GitHub 주소를 한 줄씩 작성
+# custom_nodes.txt 기반 설치
 # ============================================================
 
 COPY custom_nodes.txt /tmp/custom_nodes.txt
 
 WORKDIR /opt/ComfyUI/custom_nodes
 
-RUN set -eux; \
-    while IFS= read -r repo || [ -n "$repo" ]; do \
-        repo="$(echo "$repo" | xargs)"; \
+RUN set -eu; \
+    sed -i 's/\r$//' /tmp/custom_nodes.txt; \
+    \
+    line_no=0; \
+    while IFS= read -r repo || [ -n "${repo}" ]; do \
+        line_no=$((line_no + 1)); \
         \
-        [ -n "$repo" ] || continue; \
+        repo="$(echo "${repo}" | xargs)"; \
         \
-        case "$repo" in \
+        [ -n "${repo}" ] || continue; \
+        \
+        case "${repo}" in \
             \#*) continue ;; \
         esac; \
         \
+        echo ""; \
         echo "============================================"; \
-        echo "CLONING CUSTOM NODE:"; \
-        echo "$repo"; \
+        echo "CUSTOM NODE LINE: ${line_no}"; \
+        echo "REPOSITORY:"; \
+        echo "${repo}"; \
         echo "============================================"; \
         \
+        if ! git ls-remote "${repo}" HEAD >/dev/null 2>&1; then \
+            echo ""; \
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
+            echo "INVALID OR UNREACHABLE CUSTOM NODE"; \
+            echo "LINE: ${line_no}"; \
+            echo "URL : ${repo}"; \
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
+            exit 1; \
+        fi; \
+        \
+        cloned=0; \
         for attempt in 1 2 3; do \
-            if git clone --depth 1 "$repo"; then \
+            echo "Clone attempt ${attempt}/3"; \
+            \
+            if git clone --depth 1 "${repo}"; then \
+                cloned=1; \
                 break; \
             fi; \
             \
-            if [ "$attempt" -eq 3 ]; then \
-                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
-                echo "CUSTOM NODE CLONE FAILED:"; \
-                echo "$repo"; \
-                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
-                exit 1; \
-            fi; \
-            \
-            echo "Clone failed. Retry ${attempt}/3..."; \
-            sleep 3; \
+            echo "Clone failed. Retrying..."; \
+            sleep 5; \
         done; \
+        \
+        if [ "${cloned}" -ne 1 ]; then \
+            echo ""; \
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
+            echo "CUSTOM NODE CLONE FAILED"; \
+            echo "LINE: ${line_no}"; \
+            echo "URL : ${repo}"; \
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"; \
+            exit 1; \
+        fi; \
     done < /tmp/custom_nodes.txt; \
     \
     rm -f /tmp/custom_nodes.txt
-
-
 # ============================================================
 # Install Custom Node requirements
 #
