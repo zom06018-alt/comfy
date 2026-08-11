@@ -16,4 +16,4 @@ https://github.com/ltdrdata/ComfyUI-Impact-Pack.git
 https://github.com/alexopus/ComfyUI-Image-Saver.git
 https://github.com/willmiao/ComfyUI-Lora-Manager.git
 https://github.com/yolain/ComfyUI-Easy-Use.git
-https://github.com/kohya-ss/ComfyUI-Anima-LLLite
+https://github.com/kohya-ss/ComfyUI-Anima-LLLite.git
