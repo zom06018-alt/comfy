@@ -221,6 +221,7 @@ RUN mkdir -p \
     models/controlnet \
     models/upscale_models \
     models/embeddings \
+    models/model_patches
     models/clip \
     input \
     output \
@@ -291,8 +292,9 @@ files = [
         "repo_id": "kohya-ss/Anima-LLLite",
         "filename": "anima-lllite-inpainting-v2.safetensors",
         "revision": "main",
-        "destination": "/opt/ComfyUI/models/controlnet/anima-lllite-inpainting-v2.safetensors",
+        "destination": "/opt/ComfyUI/models/model_patches/anima-lllite-inpainting-v2.safetensors",
     },
+    
 ]
 
 
