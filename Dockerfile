@@ -221,7 +221,7 @@ RUN mkdir -p \
     models/controlnet \
     models/upscale_models \
     models/embeddings \
-    models/model_patches
+    models/model_patches \
     models/clip \
     input \
     output \
