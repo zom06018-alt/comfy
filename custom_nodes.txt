@@ -2,7 +2,6 @@
 https://github.com/Comfy-Org/ComfyUI-Manager.git
 https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git
 https://github.com/bedovyy/chibi-client.git
-https://github.com/cosmicbuffalo/comfyui-mobile-frontend.git
 https://github.com/rgthree/rgthree-comfy.git
 https://github.com/ruwwww/comfyui-spectrum-sdxl.git
 https://github.com/kijai/ComfyUI-KJNodes.git
